@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pränataltermin – Untersuchungszeitraum berechnen</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #faf5f5;
+    color: #2d3748;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #b8737a 0%, #935a60 100%);
+    color: #fff;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+  }
+  header .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    margin-bottom: .25rem;
+  }
+  header .logo svg { display: block; }
+  header .practice-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  header .practice-subtitle {
+    font-size: .85rem;
+    opacity: .8;
+    margin-top: .15rem;
+  }
+
+  /* ── Main ── */
+  main {
+    flex: 1;
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 1.5rem;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem 1.25rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,.06);
+    margin-bottom: .75rem;
+    transition: box-shadow .2s;
+  }
+  .card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #b8737a;
+    margin-bottom: .75rem;
+    padding-bottom: .5rem;
+    border-bottom: 2px solid #e8d5d5;
+  }
+
+  /* ── Input-Gruppe ── */
+  .input-group {
+    margin-bottom: .75rem;
+  }
+  .input-group:last-of-type { margin-bottom: 0; }
+  .input-group > label,
+  .input-group .group-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: .3rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  /* ── Radio ── */
+  .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem 1.25rem;
+  }
+  .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .9rem;
+    cursor: pointer;
+    color: #2d3748;
+    padding: .15rem 0;
+  }
+  .radio-group input[type="radio"] {
+    appearance: none;
+    width: 1.1rem; height: 1.1rem;
+    border: 2px solid #dcc8c8;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: border-color .15s, box-shadow .15s;
+    cursor: pointer;
+  }
+  .radio-group input[type="radio"]:checked {
+    border-color: #b8737a;
+    box-shadow: inset 0 0 0 .3rem #b8737a;
+  }
+  .radio-group input[type="radio"]:focus-visible {
+    outline: 2px solid #b8737a;
+    outline-offset: 2px;
+  }
+
+  /* ── Datepicker ── */
+  .date-wrap {
+    position: relative;
+  }
+  input[type="date"] {
+    width: 100%;
+    max-width: 100%;
+    padding: .5rem .75rem;
+    font-size: .95rem;
+    font-family: inherit;
+    color: #2d3748;
+    background: #fdf8f8;
+    border: 1.5px solid #dcc8c8;
+    border-radius: 8px;
+    transition: border-color .2s, box-shadow .2s;
+    cursor: pointer;
+  }
+  input[type="date"]:focus {
+    outline: none;
+    border-color: #b8737a;
+    box-shadow: 0 0 0 3px rgba(184,115,122,.15);
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: .2rem;
+  }
+  .date-hint {
+    font-size: .8rem;
+    color: #718096;
+    margin-top: .25rem;
+  }
+
+  /* ── Result ── */
+  .result-section { display: none; margin-top: 1rem; padding-top: .75rem; border-top: 2px solid #e8d5d5; }
+  .result-section.visible { display: block; }
+
+  .result-header {
+    text-align: center;
+    margin-bottom: .75rem;
+  }
+  .result-header .service-name {
+    font-size: .95rem;
+    font-weight: 600;
+    color: #b8737a;
+  }
+  .result-header .weeks-info {
+    font-size: .8rem;
+    color: #718096;
+    margin-top: .1rem;
+  }
+
+  .result-dates {
+    display: flex;
+    gap: .75rem;
+    align-items: stretch;
+  }
+  .date-box {
+    flex: 1;
+    text-align: center;
+    background: #fdf8f8;
+    border-radius: 8px;
+    padding: .6rem .4rem;
+    border: 1.5px solid #e8d5d5;
+  }
+  .date-box .label {
+    font-size: .65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #718096;
+    margin-bottom: .15rem;
+  }
+  .date-box .day {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #2d3748;
+    line-height: 1.2;
+  }
+  .date-box .month-year {
+    font-size: .8rem;
+    color: #4a5568;
+    margin-top: .05rem;
+  }
+  .date-box .weekday {
+    font-size: .75rem;
+    color: #718096;
+    margin-top: .1rem;
+  }
+  .date-arrow {
+    display: flex;
+    align-items: center;
+    color: #b8737a;
+    font-size: 1.25rem;
+    font-weight: 300;
+    flex-shrink: 0;
+  }
+
+  .result-footnote {
+    font-size: .75rem;
+    color: #718096;
+    text-align: center;
+    margin-top: .5rem;
+    padding-top: .4rem;
+    border-top: 1px solid #e8d5d5;
+  }
+
+  /* ── Info-Badge ── */
+  .info-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .75rem;
+    color: #b8737a;
+    background: #f8eeee;
+    padding: .15rem .55rem;
+    border-radius: 20px;
+    margin-top: .35rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 520px) {
+    .card { padding: 1rem .75rem 1rem; }
+    .result-dates { flex-direction: column; gap: .35rem; }
+    .date-arrow { transform: rotate(90deg); }
+    .radio-group { flex-direction: column; gap: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path d="M16 4C12 4 6 8 6 16s6 12 10 12 10-4 10-12S20 4 16 4z" stroke="#fff" stroke-width="1.6" fill="none" opacity=".5"/>
+      <path d="M16 4c-4 0-6 4-6 8s2 8 6 8 6-4 6-8-2-8-6-8z" stroke="#fff" stroke-width="1.6" fill="none" opacity=".4"/>
+      <circle cx="16" cy="16" r="3" fill="#fff" opacity=".55"/>
+    </svg>
+    <span class="practice-name">Pränataltermin</span>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Untersuchungszeitraum bestimmen</h2>
+
+    <div class="input-group">
+      <label class="group-label">Eingabemodus</label>
+      <div class="radio-group" id="modeGroup">
+        <label><input type="radio" name="inputMode" value="dueDate" checked> Errechneter Geburtstermin</label>
+        <label><input type="radio" name="inputMode" value="lmp"> Letzte Periode (1. Tag)</label>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label for="dateInput" class="group-label" id="dateLabel">Datum des Geburtstermins</label>
+      <div class="date-wrap">
+        <input type="date" id="dateInput">
+      </div>
+      <div class="date-hint" id="dateHint">Der errechnete Geburtstermin (ET) Ihres Arztes / Ihrer Ärztin</div>
+    </div>
+
+    <div class="input-group">
+      <label class="group-label">Gewünschte Leistung</label>
+      <div class="radio-group" id="serviceGroup">
+        <label><input type="radio" name="service" value="ersttrimester" checked> Ersttrimester-Untersuchung</label>
+        <label><input type="radio" name="service" value="organscreening"> Organ-Screening</label>
+      </div>
+    </div>
+
+    <div class="result-section" id="resultSection">
+      <div class="result-header">
+        <div class="service-name" id="resultServiceName">—</div>
+        <div class="weeks-info" id="resultWeeksInfo">—</div>
+      </div>
+
+      <div class="result-dates">
+        <div class="date-box">
+          <div class="label">Frühester Termin</div>
+          <div class="day" id="resultStartDay">—</div>
+          <div class="month-year" id="resultStartMonth">—</div>
+          <div class="weekday" id="resultStartWeekday">—</div>
+        </div>
+        <div class="date-arrow">→</div>
+        <div class="date-box">
+          <div class="label">Spätester Termin</div>
+          <div class="day" id="resultEndDay">—</div>
+          <div class="month-year" id="resultEndMonth">—</div>
+          <div class="weekday" id="resultEndWeekday">—</div>
+        </div>
+      </div>
+
+      <div class="info-badge" id="resultBadge" style="margin-left:auto;margin-right:auto;width:fit-content;"></div>
+
+      <div class="result-footnote" id="resultFootnote"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  (function () {
+    const MONTHS = [
+      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+    ];
+    const WEEKDAYS = [
+      'Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'
+    ];
+
+    const dateInput     = document.getElementById('dateInput');
+    const dateLabel     = document.getElementById('dateLabel');
+    const dateHint      = document.getElementById('dateHint');
+    const modeRadios    = document.querySelectorAll('input[name="inputMode"]');
+    const serviceRadios = document.querySelectorAll('input[name="service"]');
+    const resultSection = document.getElementById('resultSection');
+
+    // Set default date to today + 280 days (approx due date)
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 280);
+    dateInput.valueAsDate = defaultDate;
+
+    // ── Update date label based on mode ──
+    function updateDateLabel() {
+      const mode = document.querySelector('input[name="inputMode"]:checked').value;
+      if (mode === 'dueDate') {
+        dateLabel.textContent = 'Datum des Geburtstermins';
+        dateHint.textContent = 'Der errechnete Geburtstermin (ET) Ihres Arztes / Ihrer Ärztin';
+      } else {
+        dateLabel.textContent = 'Datum der letzten Periode';
+        dateHint.textContent = 'Der 1. Tag Ihrer letzten Monatsblutung';
+      }
+    }
+    modeRadios.forEach(r => r.addEventListener('change', updateDateLabel));
+
+    // ── Format date ──
+    function fmtDate(d) {
+      return { day: d.getDate(), month: MONTHS[d.getMonth()], year: d.getFullYear(), weekday: WEEKDAYS[d.getDay()] };
+    }
+
+    function fmtDateStr(d) {
+      return String(d.getDate()).padStart(2, '0') + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    }
+
+    // ── Main calculation ──
+    function calculate() {
+      const dateVal = dateInput.value;
+      if (!dateVal) {
+        resultSection.classList.remove('visible');
+        return;
+      }
+
+      const mode    = document.querySelector('input[name="inputMode"]:checked').value;
+      const service = document.querySelector('input[name="service"]:checked').value;
+
+      const inputDate = new Date(dateVal + 'T00:00:00');
+
+      // LMP bestimmen
+      let lmp;
+      if (mode === 'dueDate') {
+        lmp = new Date(+inputDate);
+        lmp.setDate(lmp.getDate() - 280);
+      } else {
+        lmp = new Date(+inputDate);
+      }
+
+      // SSW-Fenster in Tagen ab LMP
+      let startDays, endDays, sswLabel;
+      if (service === 'ersttrimester') {
+        startDays = 12 * 7 + 2;  // 12+2
+        endDays   = 13 * 7 + 6;  // 13+6
+        sswLabel  = '12+2 bis 13+6 SSW';
+      } else {
+        startDays = 21 * 7 + 2;  // 21+2
+        endDays   = 23 * 7 + 6;  // 23+6
+        sswLabel  = '21+2 bis 23+6 SSW';
+      }
+
+      const startDate = new Date(+lmp);
+      startDate.setDate(startDate.getDate() + startDays);
+
+      const endDate = new Date(+lmp);
+      endDate.setDate(endDate.getDate() + endDays);
+
+      // Heutige SSW berechnen (für Info)
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const daysSinceLMP = Math.round((today - lmp) / 86400000);
+      const currentWeek  = Math.floor(daysSinceLMP / 7);
+      const currentDay   = daysSinceLMP % 7;
+
+      // Result anzeigen
+      const sName = service === 'ersttrimester' ? 'Ersttrimester-Untersuchung' : 'Organ-Screening';
+
+      document.getElementById('resultServiceName').textContent = sName;
+      document.getElementById('resultWeeksInfo').textContent = 'Empfohlener Zeitraum: ' + sswLabel;
+
+      const sd = fmtDate(startDate);
+      const ed = fmtDate(endDate);
+
+      document.getElementById('resultStartDay').textContent      = sd.day;
+      document.getElementById('resultStartMonth').textContent     = sd.month + ' ' + sd.year;
+      document.getElementById('resultStartWeekday').textContent   = sd.weekday;
+
+      document.getElementById('resultEndDay').textContent      = ed.day;
+      document.getElementById('resultEndMonth').textContent     = ed.month + ' ' + ed.year;
+      document.getElementById('resultEndWeekday').textContent   = ed.weekday;
+
+      // Badge: aktueller Stand
+      const badge = document.getElementById('resultBadge');
+      if (today < startDate) {
+        badge.innerHTML = '✦ Dieser Zeitraum liegt noch in der Zukunft';
+      } else if (today > endDate) {
+        badge.innerHTML = '✦ Dieser Zeitraum liegt bereits in der Vergangenheit';
+      } else {
+        badge.innerHTML = '✦ Sie befinden sich aktuell in diesem Zeitraum';
+      }
+
+      // Fussnote
+      const lmp_display = fmtDateStr(lmp);
+      const et = new Date(+lmp);
+      et.setDate(et.getDate() + 280);
+      const et_display = fmtDateStr(et);
+      document.getElementById('resultFootnote').textContent =
+        mode === 'dueDate'
+          ? 'Berechnet aus dem Geburtstermin. Letzte Periode (LMP): ' + lmp_display
+          : 'Berechnet ab LMP: ' + lmp_display + ' · errechneter Geburtstermin (ET): ' + et_display;
+
+      resultSection.classList.add('visible');
+    }
+
+    // Automatische Berechnung bei jeder Änderung
+    dateInput.addEventListener('change', calculate);
+    dateInput.addEventListener('input', calculate);
+    modeRadios.forEach(r => r.addEventListener('change', calculate));
+    serviceRadios.forEach(r => r.addEventListener('change', calculate));
+
+    // Initiale Berechnung
+    updateDateLabel();
+    calculate();
+  })();
+</script>
+
+</body>
+</html>
