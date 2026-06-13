@@ -225,6 +225,14 @@
     border-top: 1px solid #e8d5d5;
   }
 
+  .calc-note {
+    font-size: .7rem;
+    color: #a0aec0;
+    text-align: center;
+    margin-top: .6rem;
+    line-height: 1.4;
+  }
+
   /* ── Info-Badge ── */
   .info-badge {
     display: inline-flex;
@@ -242,7 +250,7 @@
   @media (max-width: 520px) {
     .card { padding: 1rem .75rem 1rem; }
     .result-dates { flex-direction: column; gap: .35rem; }
-    .date-arrow { transform: rotate(90deg); }
+    .date-arrow { transform: rotate(90deg); align-self: center; padding: .15rem 0; }
     .radio-group { flex-direction: column; gap: 0; }
   }
 </style>
@@ -313,6 +321,8 @@
       <div class="info-badge" id="resultBadge" style="margin-left:auto;margin-right:auto;width:fit-content;"></div>
 
       <div class="result-footnote" id="resultFootnote"></div>
+
+      <div class="calc-note">Berechnung basiert auf 280 Tagen (40 Wochen) ab dem LMP-Datum. Zur Naegele-Regel (LMP + 1 Jahr &minus; 3 Monate + 7 Tage) sind Abweichungen von &plusmn;1&ndash;2 Tagen m&ouml;glich.</div>
     </div>
   </div>
 </main>
